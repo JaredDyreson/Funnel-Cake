@@ -6,7 +6,7 @@ Revamped Flask application for AWS
 
 from flask import Flask, render_template, url_for, flash, redirect, request, session
 from flask_oauthlib.client import OAuth, OAuthException
-from forms import RegistrationForm, LoginForm, PlaylistMergeForm, PlaylistCloneForm
+from front_end.forms import RegistrationForm, LoginForm, PlaylistMergeForm, PlaylistCloneForm
 from flask_wtf import FlaskForm
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from werkzeug.serving import run_simple

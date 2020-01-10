@@ -4,8 +4,8 @@
 driver code during the development of this project
 """
 
-import spotify_oauth_flow
-import spot_playlist
+from back_end import spotify_oauth_flow
+from back_end import spot_playlist
 import os
 from pprint import pprint as pp
 
@@ -21,15 +21,15 @@ def clone(manager: spot_playlist.PlaylistManager, src: spot_playlist.SpotifyPlay
     cloned_playlist = spot_playlist.SpotifyPlaylist.from_url(manager, destination_url)
     cloned_playlist.append(src.tracks)
 
-if(spotify_oauth_flow.run_authentication()):
-  user_id, username, oauth_token = os.environ.get('user_id'), os.environ.get('username'), os.environ.get('oauth_token')
-else: quit()
+user_id, username, oauth_token = os.environ.get('user_id'), os.environ.get('username'), os.environ.get('oauth_token')
 
-url = "https://open.spotify.com/playlist/7IA5wYxCPYcMgfrMMtdKqw"
-other_url = "https://open.spotify.com/playlist/1V1tbXuSpmwX4EWJOW0oqq"
+print(user_id, username, oauth_token)
+
+url = "https://open.spotify.com/playlist/5n3IEeTyqESIhwjEgkgzOA"
+other_url = "https://open.spotify.com/playlist/6ropIwtV9pcTon1ukSKMCZ"
 manager = spot_playlist.PlaylistManager(user_id, oauth_token)
 playlist = spot_playlist.SpotifyPlaylist.from_url(manager, url)
 other_playlist = spot_playlist.SpotifyPlaylist.from_url(manager, other_url)
 
-# merge(manager, playlist, other_playlist, "Merger")
-clone(manager, other_playlist)
+merge(manager, playlist, other_playlist, "Ultimate Playlist")
+

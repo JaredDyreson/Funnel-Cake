@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>funnel_cake</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.url_one.label }}<br>
+            {{ form.url_one(size=32) }}
+        </p>
+        <p>
+            {{ form.url_two.label }}<br>
+            {{ form.url_two(size=32) }}
+        </p>
+        <p>
+            {{ form.playlist_output_name.label }}<br>
+            {{ form.playlist_output_name(size=32) }}
+        </p>
+        <p>{{ form.submit() }}</p>
+    </form>
+{% endblock %}

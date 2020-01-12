@@ -21,29 +21,13 @@ app.debug = False
 app.secret_key = 'development'
 oauth = OAuth(app)
 
-
-# def run_authentication() -> credential_manager.CredentialManager:
-
-  # """
-  # Run the Flask application.
-  # True: successfully authenticated user
-  # False: there was an error authenticating user
-  # """
-  # app.run()
-  # print(session['user_id'])
-  # user_id, username, oauth_token = os.environ.get('user_id'), os.environ.get('username'), os.environ.get('oauth_token')
-  # return credential_manager.CredentialManager(user_id, username, oauth_token)
-  # # try:
-  # # except Exception:
-    # # return credential_manager.CredentialManager("", "", "")
-
-scope = ['playlist-modify-public', 'user-library-read', 'user-library-modify']
+scope = ['playlist-modify-public', 'user-library-read', 'user-library-modify', 'user-follow-read', 'user-read-private', 'user-top-read']
 
 spotify = oauth.remote_app(
   'spotify',
   consumer_key=SPOTIFY_APP_ID,
   consumer_secret=SPOTIFY_APP_SECRET,
-  request_token_params={'scope': '{}'.format(*scope)},
+  request_token_params={'scope': '{}'.format(scope)},
   base_url='https://accounts.spotify.com',
   request_token_url=None,
   access_token_url='/api/token',
@@ -113,4 +97,6 @@ def spotify_authorized() -> str:
 def get_spotify_oauth_token() -> str:
   return session.get('oauth_token')
 
-run_simple("127.0.0.1", 5000, app)
+def run_application(scopes: list):
+  spotify.request_token_params['scope'] = scopes
+  run_simple("127.0.0.1", 5000, app)

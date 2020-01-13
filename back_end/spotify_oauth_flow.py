@@ -12,6 +12,10 @@ import requests
 import json
 import werkzeug
 from werkzeug.serving import run_simple
+import threading
+import webbrowser
+import time
+from selenium import webdriver
 
 SPOTIFY_APP_ID = os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_ID")
 SPOTIFY_APP_SECRET = os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_SECRET")
@@ -98,5 +102,28 @@ def get_spotify_oauth_token() -> str:
   return session.get('oauth_token')
 
 def run_application(scopes: list):
-  spotify.request_token_params['scope'] = scopes
-  run_simple("127.0.0.1", 5000, app)
+  """
+  This code is a little janky because webbrowser does not support closing tabs.
+  If the machine has Firefox installed, we are going to try to open a selenium driver.
+  This will allow us to close the driver instance when we are done with the authentication.
+  For everyone else, we will stick wit the webbrowser equivalent and will need to close it manually.
+
+  Original code:
+  https://stackoverflow.com/questions/11125196/python-flask-open-a-webpage-in-default-browser
+  """
+  if(len(scopes) != 0):
+    spotify.request_token_params['scope'] = scopes
+  port = 5000
+  url = "http://127.0.0.1:{}".format(port)
+  browser_name = webbrowser.get().name
+  driver = None
+  if(browser_name == "firefox"):
+    from selenium.webdriver.firefox.options import Options
+    headless_ = Options()
+    headless_.headless = False
+    driver = webdriver.Firefox(options=headless_)
+    threading.Timer(1.25, lambda: driver.get(url)).start()
+  else:
+    threading.Timer(1.25, lambda: webbrowser.open(url)).start()
+  app.run(port=port, debug=False)
+  if(driver is not None): driver.quit()

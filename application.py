@@ -2,6 +2,16 @@
 
 """
 Revamped Flask application for AWS
+
+External links:
+
+Run Flask application inside a class:
+https://stackoverflow.com/questions/40460846/using-flask-inside-class
+https://coderwall.com/p/jo39na/python-decorators-using-self
+
+If Python autocomplete breaks and you're testing Flask application on port 5000, here is how to find and kill the rouge process:
+
+https://stackoverflow.com/questions/11583562/how-to-kill-a-process-running-on-particular-port-in-linux
 """
 
 from flask import Flask, render_template, url_for, flash, redirect, request, session
@@ -18,9 +28,14 @@ import spotipy
 import json
 import requests
 
-from back_end import spotify_oauth_flow
+# from back_end import spotify_oauth_flow
 from back_end import spot_playlist
+import get_personal_statistics
 import os
+import time
+import atexit
+
+from apscheduler.schedulers.background import BackgroundScheduler
 
 application = Flask(__name__)
 application.config['SECRET_KEY'] = os.environ.get("SPOTIFY_SECRET_KEY")
@@ -70,5 +85,22 @@ def index():
 def about():
   return render_template('about.html', title='About')
 
+def hello_world():
+    print("Hello world from time of: {}".format(time.strftime("%A, %d. %B %Y %I:%M:%S %p")))
+
+"""
+Run code in the background every "n" minutes.
+Thanks to this post -> https://stackoverflow.com/questions/21214270/scheduling-a-function-to-run-every-hour-on-flask
+"""
+
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(func=get_personal_statistics.driver, trigger="interval", seconds=20)
+# scheduler.start()
+get_personal_statistics.driver()
 # run_simple("127.0.0.1", 5001, application)
-application.run()
+"""
+Run Flask application with threading support
+https://stackoverflow.com/questions/10938360/how-many-concurrent-requests-does-a-single-flask-process-receive
+"""
+application.run(host="127.0.0.1", port=5001, threaded=True)
+# atexit.register(lambda: scheduler.shutdown())

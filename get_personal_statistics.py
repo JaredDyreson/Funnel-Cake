@@ -3,6 +3,7 @@
 import os
 import requests
 from back_end import spotify_oauth_flow
+from back_end.spotify_artist import SpotifyArtist
 import json
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from pprint import pprint
@@ -12,11 +13,7 @@ import operator
 import numpy as np
 from flask import redirect
 
-class SpotifyArtist:
-    def __init__(self, name: str, popularity: str, hash_identifier: str):
-        self.name = name
-        self.popularity = popularity
-        self.hash_identifier = hash_identifier
+
 
 def get_top_artists(token: str):
       url = "https://api.spotify.com/v1/me/top/artists"

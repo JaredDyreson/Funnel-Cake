@@ -45,6 +45,15 @@ playlist_manager = spot_playlist.PlaylistManager(
     os.environ.get("oauth_token")
 )
 
+"""
+Run code in the background every "n" minutes.
+Thanks to this post -> https://stackoverflow.com/questions/21214270/scheduling-a-function-to-run-every-hour-on-flask
+"""
+
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(func=get_personal_statistics.driver, trigger="interval", seconds=20)
+# scheduler.start()
+
 def merge(manager: spot_playlist.PlaylistManager, src_one: spot_playlist.SpotifyPlaylist, 
             src_two: spot_playlist.SpotifyPlaylist, dst: str):
    combined_tracks = src_one + src_two 
@@ -85,22 +94,11 @@ def index():
 def about():
   return render_template('about.html', title='About')
 
-def hello_world():
-    print("Hello world from time of: {}".format(time.strftime("%A, %d. %B %Y %I:%M:%S %p")))
 
-"""
-Run code in the background every "n" minutes.
-Thanks to this post -> https://stackoverflow.com/questions/21214270/scheduling-a-function-to-run-every-hour-on-flask
-"""
-
-# scheduler = BackgroundScheduler()
-# scheduler.add_job(func=get_personal_statistics.driver, trigger="interval", seconds=20)
-# scheduler.start()
-get_personal_statistics.driver()
-# run_simple("127.0.0.1", 5001, application)
 """
 Run Flask application with threading support
 https://stackoverflow.com/questions/10938360/how-many-concurrent-requests-does-a-single-flask-process-receive
 """
+
 application.run(host="127.0.0.1", port=5001, threaded=True)
 # atexit.register(lambda: scheduler.shutdown())

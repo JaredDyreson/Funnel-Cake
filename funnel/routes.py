@@ -5,8 +5,6 @@ from funnel import application
 from funnel.models import PlaylistMergeForm, PlaylistCloneForm
 from spotutils import spot_playlist
 
-from spotutils import spotify_oauth_application
-
 import threading
 import webbrowser
 import os
@@ -23,8 +21,8 @@ oauth = OAuth(application)
 
 scope = ['playlist-modify-public', 'user-library-read', 'user-library-modify', 'user-follow-read', 'user-read-private', 'user-top-read']
 
-SPOTIFY_APP_ID = os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_ID")
-SPOTIFY_APP_SECRET = os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_SECRET")
+SPOTIFY_APP_ID = "e1f239ec0ee443689d6786fd3f397af1"
+SPOTIFY_APP_SECRET = "cbecd4d200f8482d910cb1db77d6f10c"
 
 spotify = oauth.remote_app(
   'spotify',
@@ -66,20 +64,12 @@ def index():
   token = os.environ.get("oauth_token")
   if((u_id is None) or (token is None)):
     flash("Please authenticate yourself", 'danger')
+
   playlist_manager = spot_playlist.PlaylistManager(
       os.environ.get("user_id"),
       os.environ.get("oauth_token")
   )
-  # if(
-    # u_id := os.environ.get("user_id") is None and
-    # token := os.environ.get("oauth_token") is None):
-    
-      # port = 5000
-      # url = "http://127.0.0.1:{}".format(port)
-      # threading.Timer(1.5, lambda: webbrowser.open(url)).start()
-      # application.run(host="127.0.0.1", port=port, threaded=True)
-      # playlist_manager.user = u_id
-      # playlist_manager.token = token
+
   if(form.validate_on_submit()):
     url_one = form.playlist_one.data
     url_two = form.playlist_two.data
@@ -87,15 +77,21 @@ def index():
     playlist = spot_playlist.SpotifyPlaylist.from_url(playlist_manager, url_one)
     other_playlist = spot_playlist.SpotifyPlaylist.from_url(playlist_manager, url_two)
     merge(playlist_manager, playlist, other_playlist, destination_name)
-    flash("merge", 'success')
-    return render_template('home.html', form=None, cloned_form=None)
+    try:
+      flash("Merged: {} + {}".format(playlist.name, other_playlist.name), 'success')
+    except Exception:
+      flash("Unsucessfully merged the two playlists provided", 'danger')
+    return redirect(url_for('index'))
   elif(cloned_form.validate_on_submit()):
     # clone
     url_one = cloned_form.playlist_original.data
     playlist = spot_playlist.SpotifyPlaylist.from_url(playlist_manager, url_one)
-    clone(playlist_manager, playlist)
-    flash("clone", 'success')
-    return render_template('home.html', form=None, cloned_form=None)
+    try:
+      clone(playlist_manager, playlist)
+      flash("Cloned: {}".format(playlist.name), 'success')
+    except Exception:
+      flash("Unsuccessfully cloned playlist provided", 'danger')
+    return redirect(url_for('index'))
   return render_template('home.html', form=form, cloned_form=cloned_form)
 
 
@@ -165,7 +161,9 @@ def spotify_authorized() -> str:
   session['username'] = text_response.get('display_name')
 
   # Kill our application
-  # request.environ.get('werkzeug.server.shutdown')()
+  if(os.environ.get("SHUTDOWN_AFTER_AUTH") == "YES"):
+    request.environ.get('werkzeug.server.shutdown')()
+    return redirect("https://google.com")
   flash("Successfully authenticated: {}".format(os.environ['username']), 'success')
   return redirect("/")
 

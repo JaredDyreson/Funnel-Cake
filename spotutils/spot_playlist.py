@@ -13,8 +13,8 @@ class PlaylistManager(object):
         self.user_id = user_id
         self.token = token
         self.credential_manager = SpotifyClientCredentials(
-          client_id=os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_ID"),
-          client_secret=os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_SECRET")
+          client_id="e1f239ec0ee443689d6786fd3f397af1",
+          client_secret="cbecd4d200f8482d910cb1db77d6f10c"
         )
         self.non_elevated_credentials = spotipy.Spotify(
           client_credentials_manager=self.credential_manager
@@ -53,8 +53,8 @@ class SpotifyPlaylist(PlaylistManager):
       self.tracks = tracks
       if(len(tracks) == 0): self.tracks = self.get_track_ids()
       self.name = name
-      # if((self.name is None) and (self.url is not None)):
-        # self.name = self.get_name()
+      if((self.name is None) and (self.url is not None)):
+        self.name = self.get_name()
 
     def __add__(self, other) -> list:
         return list(set().union(self.tracks, other.tracks))
@@ -75,13 +75,29 @@ class SpotifyPlaylist(PlaylistManager):
           'Content-Type': 'application/json', 
           'Authorization': 'Bearer {}'.format(self.token) 
         }
-        request = requests.post(url, headers=headers)
-        if(request.status_code != 201):
+        request = requests.get(url, headers=headers)
+        if(request.status_code != 200):
           raise Exception("Error: Request returned status code {}. Message: {}".format(
                 request.status_code, request.text
           ))
-        return request.content
+        response = json.loads(request.content)
+        return response["owner"]["id"]
 
+    def playlist_name(self) -> str:
+        if(self.url is None): return ""
+        url = "https://api.spotify.com/v1/playlists/{}".format(self.playlist_id())
+        headers = {
+          'Accept': 'application/json', 
+          'Content-Type': 'application/json', 
+          'Authorization': 'Bearer {}'.format(self.token) 
+        }
+        request = requests.get(url, headers=headers)
+        if(request.status_code != 200):
+          raise Exception("Error: Request returned status code {}. Message: {}".format(
+                request.status_code, request.text
+          ))
+        response = json.loads(request.content)
+        return response["name"]
     def playlist_id(self) -> str:
        for playlist in self.list_user_playlists():
          current_playlist_url = playlist['external_urls']['spotify']

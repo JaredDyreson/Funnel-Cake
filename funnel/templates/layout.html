@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     {% if title %}
         <title>Funnel Cake - {{ title }}</title>
@@ -28,6 +29,7 @@
             <div class="navbar-nav mr-auto">
               <a class="nav-item nav-link" href="/about">About</a>
               <a class="nav-item nav-link" href="/spot">Authenticate</a>
+              <a class="nav-item nav-link" href="/stats">Personal Stats</a>
             </div>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">

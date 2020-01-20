@@ -22,8 +22,18 @@ class PlaylistManager(object):
         self.elevated_credentials = spotipy.Spotify(
           auth=self.token
         )
+    def user_playlist_names(self) -> list:
+        """
+        Get a list of all the playlist names a user has.
+        """
 
-    def list_user_playlists(self) -> dict:
+        return [playlist['name'] for playlist in self.list_user_playlist_information()]
+
+    def list_user_playlist_information(self) -> dict:
+      """
+      Get all the information about a user's playlists
+      """
+
       results = self.elevated_credentials.user_playlists(self.user_id)
       playlist_manifest = results['items']
       while results['next']:
@@ -32,12 +42,16 @@ class PlaylistManager(object):
       return playlist_manifest
 
     def is_playlist(self, playlist_name: str) -> bool:
-        for playlist in self.list_user_playlists():
-          if(playlist['name'] == playlist_name): return True
-        return False
-
+        """
+        Check for the existence of a playlist
+        """
+        return (playlist_name in self.user_playlist_names())
 
     def create(self, destination: str):
+       """
+       Create a playlist and return it's link if success or False if unsuccessful.
+       """
+
        if not(self.is_playlist(destination)):
         return self.elevated_credentials.user_playlist_create(
               self.user_id,
@@ -48,61 +62,122 @@ class PlaylistManager(object):
 
 class SpotifyPlaylist(PlaylistManager):
     def __init__(self, manager: PlaylistManager, tracks: list, url=None, name=None):
+      """
+      Constructor for the Playlist class.
+      We inherit the PlaylistManager class because we don't always want to have a manager
+      object passed into our functions.
+      """
+
       super().__init__(manager.user_id, manager.token)
-      self.url = url
+      self.url = self.parse_url(url)
       self.tracks = tracks
       if(len(tracks) == 0): self.tracks = self.get_track_ids()
+      self.api_response = self.get_response()
       self.name = name
       if((self.name is None) and (self.url is not None)):
-        self.name = self.get_name()
+        self.name = self.playlist_name()
 
     def __add__(self, other) -> list:
+        """
+        Combine both track lists into a set, casting duplicate elements out, subsequently finding the union. 
+        """
         return list(set().union(self.tracks, other.tracks))
+
+    def __sub__(self, other) -> list:
+        """
+        Find the intersection of both lists
+        """
+        return list(set(self.tracks) & set(other.tracks))
+    def __eq__(self, other) -> bool:
+        """
+        Check if both objects are the same
+        """
+        return ((self.tracks == other.tracks) and (self.url == other.url))
 
     @classmethod
     def from_url(cls, manager: PlaylistManager, url: str):
+       """
+       Have all the information get gathered from API calls.
+       """
        return cls(manager, [], url)
 
+    def parse_url(self, url: str) -> str:
+        """
+        Choosing how we process the url given.
+        It can take either be given from the iOS app or the web player.
+        The iOS version is sent to the reform_url() function to be modified.
+        """
+
+        if("user" in url):
+         return self.reform_url() 
+        elif(url is None): return ""
+        return url
+        
     def url_base(self) -> str:
+       """
+       Grab the playlist id from the url.
+       Sometimes it has a weird extension of ?si=.* which needs to be removed.
+       """
+
        if(self.url is None): return ""
-       return os.path.basename(self.url)
+
+       base_split = os.path.basename(self.url).split("?si=")
+       if(len(base_split) == 0):
+         return os.path.basename(self.url)
+       return base_split[0]
+
+    def reform_url(self) -> str:
+       """
+       Conform the url to look like the web player format.
+       """ 
+
+       return "https://open.spotify.com/playlist/{}".format(self.url_base())
+
+    def get_response(self) -> dict:
+       """
+       We only want to make one API request, the other functions will parse this
+       response to get the necessary information.
+       """
+
+       if(self.url is None): return ""
+       url = "https://api.spotify.com/v1/playlists/{}".format(self.playlist_id())
+       headers = {
+         'Accept': 'application/json', 
+         'Content-Type': 'application/json', 
+         'Authorization': 'Bearer {}'.format(self.token) 
+       }
+       request = requests.get(url, headers=headers)
+       if(request.status_code != 200):
+         raise Exception("Error: Request returned status code {}. Message: {}".format(
+               request.status_code, request.text
+       ))
+       return json.loads(request.content)
 
     def playlist_owner_id(self) -> str:
-        if(self.url is None): return ""
-        url = "https://api.spotify.com/v1/playlists/{}".format(self.playlist_id())
-        headers = {
-          'Accept': 'application/json', 
-          'Content-Type': 'application/json', 
-          'Authorization': 'Bearer {}'.format(self.token) 
-        }
-        request = requests.get(url, headers=headers)
-        if(request.status_code != 200):
-          raise Exception("Error: Request returned status code {}. Message: {}".format(
-                request.status_code, request.text
-          ))
-        response = json.loads(request.content)
-        return response["owner"]["id"]
+
+        """
+        Parse the response to grab the playlist's owner id.
+        """
+
+        try: return self.api_response["owner"]["id"]
+        except KeyError: return ""
 
     def playlist_name(self) -> str:
-        if(self.url is None): return ""
-        url = "https://api.spotify.com/v1/playlists/{}".format(self.playlist_id())
-        headers = {
-          'Accept': 'application/json', 
-          'Content-Type': 'application/json', 
-          'Authorization': 'Bearer {}'.format(self.token) 
-        }
-        request = requests.get(url, headers=headers)
-        if(request.status_code != 200):
-          raise Exception("Error: Request returned status code {}. Message: {}".format(
-                request.status_code, request.text
-          ))
-        response = json.loads(request.content)
-        return response["name"]
+
+        """
+        Parse the response to grab the playlist name.
+        """
+
+        try: return self.api_response["name"]
+        except KeyError: return ""
+
     def playlist_id(self) -> str:
-       for playlist in self.list_user_playlists():
-         current_playlist_url = playlist['external_urls']['spotify']
-         if(current_playlist_url == self.url): return playlist['id']
+       """
+       Same as calling url_base()
+       """
+
        return self.url_base()
+
     def get_track_ids(self) -> list:
         
       if(len(self.tracks) > 0): return []
@@ -121,11 +196,18 @@ class SpotifyPlaylist(PlaylistManager):
       return tracks
 
     def truncate(self) -> None:
+      """
+      Remove all tracks from a playlist.
+      """
       self.elevated_credentials.user_playlist_remove_all_occurrences_of_tracks(
           self.user_id, self.playlist_id(), self.tracks
       )
 
     def append(self, container: list) -> None:
+
+      """
+      Insert the contents of container into the current instance of the playlist.
+      """
         
       track_list_uris = ["spotify:track:{}".format(element) for element in container]
       url = "https://api.spotify.com/v1/users/{}/playlists/{}/tracks?position=0".format(self.user_id, self.playlist_id())
@@ -134,6 +216,7 @@ class SpotifyPlaylist(PlaylistManager):
         'Content-Type': 'application/json', 
         'Authorization': 'Bearer {}'.format(self.token)
       }
+      # there is a 100 track limit per request, we need to make multiple requests if this is the case
       chunks = [track_list_uris[x:x+100] for x in range(0, len(track_list_uris), 100)]
       for uri_chunk in chunks:
         payload = {
@@ -144,11 +227,48 @@ class SpotifyPlaylist(PlaylistManager):
 
         if(request.status_code != 201): 
           print('Error: Request returned status code {}. Returned: {}'.format(request.status_code, request.text))
-    def get_name(self) -> str:
-        try:
-            return self.non_elevated_credentials.user_playlist(
-              user=self.playlist_owner_id(),
-              playlist_id=self.playlist_id(),
-              fields="name"
-            )["name"]
-        except IndexError: return ""
+      # this is the new tracks attribute
+      self.tracks = container
+
+    def get_detailed_track_info(self) -> list:
+      url = "https://api.spotify.com/v1/tracks"
+      headers = {
+        'Accept': 'application/json', 
+        'Content-Type': 'application/json', 
+        'Authorization': 'Bearer {}'.format(self.token)
+      }
+
+      container = ["{}/{}".format(url, track) for track in self.tracks]
+      return [json.loads(requests.get(element, headers=headers).content) for element in container]
+    def find_explicit(self) -> list:
+        return [element['id'] for element in self.get_detailed_track_info() if(element['explicit'])]
+    def find_live(self) -> list:
+        container = []
+        for element in self.get_detailed_track_info():
+          name = element['name']
+          if("live" in name.lower()): container.append(element['id'])
+        return container
+    def remove(self, container: list) -> None:
+      url = "https://api.spotify.com/v1/playlists/{}/tracks".format(self.playlist_id())
+      payload = {
+        "tracks": []
+      }
+
+      headers = {
+        'Accept': 'application/json', 
+        'Content-Type': 'application/json', 
+        'Authorization': 'Bearer {}'.format(self.token)
+      }
+
+      track_list_uris = ["spotify:track:{}".format(track) for track in container]
+      chunks = [track_list_uris[x:x+100] for x in range(0, len(track_list_uris), 100)]
+      for row in chunks:
+        for index, element in enumerate(row):
+            data = {
+              "uri": element,
+              "position": index
+            }
+            payload["tracks"].append(data)
+        requests.delete(url, headers=headers, data=json.dumps(payload))
+        payload["tracks"] = []
+

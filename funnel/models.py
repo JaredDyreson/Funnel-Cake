@@ -22,7 +22,7 @@ class PlaylistMergeForm(FlaskForm):
 class PlaylistCloneForm(FlaskForm):
 
   playlist_original = StringField(
-    'Playlist One',
+    'Source Playlist',
     validators = [DataRequired()]
   )
   submit = SubmitField('Clone')

@@ -2,8 +2,8 @@
 
 import os
 import requests
-from back_end import spotify_oauth_flow
-from back_end.spotify_artist import SpotifyArtist
+# from back_end import spotify_oauth_flow
+from spotutils.spotify_artist import SpotifyArtist
 import json
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 from pprint import pprint

@@ -1,19 +1,19 @@
-from flask import Flask, request
+#!/usr/bin/env python3.8
 
-app = Flask(__name__)
+from FunnelCake import PlaylistManager, SpotifyPlaylist
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        print(request.form.getlist('hello'))
 
-    return '''<form method="post">
-<div>
-<input type="checkbox" name="hello" value="world" checked>
-<label for="hello">Subscribe to newsletter?</label>
-</div>
-<input type="checkbox" name="hello" value="davidism" checked>
-<input type="submit">
-</form>'''
+def clone(manager: PlaylistManager, src: SpotifyPlaylist):
+    name = src.name
+    destination_url = manager.create(f"{name} | CLONED")
+    cloned_playlist = SpotifyPlaylist.SpotifyPlaylist.from_url(manager, destination_url)
+    cloned_playlist.append(src.tracks)
+    print(f"[+] Successfully cloned {name}")
 
-app.run()
+DUMMY_TOKEN = "BQDKvx-LZclJHVZskW0vxOH1PbLDFq75o0Sii2G13IpaFiaNax3YWfrOzWezM7D_11GlFvvcpIcWUfUKLXuGvqS842Ez64kp5upkxt71jeO26QsqbDq2cmZWncW3KL3pFXoA-ljOCzy5l_kOWQOZfScanwJC4AJxEQTcBYE0MncYfJBo72uPBhb_S8OHFgnHnEEQtbhX_xQt--Wh1l2JRV2R"
+DUMMY_ID = "12164553253"
+url = "https://open.spotify.com/playlist/37i9dQZF1DXasneILDRM7B"
+manager = PlaylistManager.PlaylistManager(DUMMY_ID, DUMMY_TOKEN)
+playlist = SpotifyPlaylist.SpotifyPlaylist.from_url(manager, url)
+
+clone(manager, playlist)

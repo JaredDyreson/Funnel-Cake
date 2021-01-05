@@ -1,19 +1,31 @@
 #!/usr/bin/env python3.8
 
-from FunnelCake import PlaylistManager, SpotifyPlaylist
+import inspect
 
+from FunnelCake import PlaylistManager, SpotifyPlaylist, SpotifyHelper
+
+def helperfunction(inp_):
+    print(inp_)
 
 def clone(manager: PlaylistManager, src: SpotifyPlaylist):
+    print(__name__)
     name = src.name
     destination_url = manager.create(f"{name} | CLONED")
     cloned_playlist = SpotifyPlaylist.SpotifyPlaylist.from_url(manager, destination_url)
     cloned_playlist.append(src.tracks)
     print(f"[+] Successfully cloned {name}")
 
-DUMMY_TOKEN = "BQDKvx-LZclJHVZskW0vxOH1PbLDFq75o0Sii2G13IpaFiaNax3YWfrOzWezM7D_11GlFvvcpIcWUfUKLXuGvqS842Ez64kp5upkxt71jeO26QsqbDq2cmZWncW3KL3pFXoA-ljOCzy5l_kOWQOZfScanwJC4AJxEQTcBYE0MncYfJBo72uPBhb_S8OHFgnHnEEQtbhX_xQt--Wh1l2JRV2R"
-DUMMY_ID = "12164553253"
-url = "https://open.spotify.com/playlist/37i9dQZF1DXasneILDRM7B"
-manager = PlaylistManager.PlaylistManager(DUMMY_ID, DUMMY_TOKEN)
-playlist = SpotifyPlaylist.SpotifyPlaylist.from_url(manager, url)
+def clone_driver(url: str) -> None:
+    if(not isinstance(url, str)):
+        raise ValueError
+    """
+    TODO:
+    either have the user be authenticated prior or do it here?
+    """
 
-clone(manager, playlist)
+DUMMY_TOKEN = "BQAavLxyDbzBlZlnBNHIGFQZ6QLi62LgsluRrNyia6Jr-Iz4VJu-TII_NhsEHPkWeD9P2M22WVVqYRoCuSPLVxp7r-DZPgzSPtGaCGK1XORUdadZQ6V7C3v8YM4kbL-sVbQSVzK1AiSqbdVixhkU1wUJTpIbBEa5QM3m65nls-si_MMYhCPmWjdUcRZszvUXoKiQ_1iqBowJ0Mss30EGQDeS"
+DUMMY_ID = "12164553253"
+
+manager = PlaylistManager.PlaylistManager(DUMMY_ID, DUMMY_TOKEN)
+
+SpotifyHelper.process_file("list_of_links", manager, SpotifyHelper.clone)

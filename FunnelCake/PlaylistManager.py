@@ -32,6 +32,8 @@ class PlaylistManager(object):
         self.elevated_credentials = spotipy.Spotify(
           auth=self.token
         )
+    def __repr__(self):
+        return f'Token: {self.token}\nUser ID: {self.user_id}'
 
     def user_playlist_names(self) -> list:
         """

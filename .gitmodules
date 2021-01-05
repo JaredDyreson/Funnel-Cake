@@ -1,0 +1,3 @@
+[submodule "SpotifyToolbox"]
+	path = SpotifyToolbox
+	url = https://github.com/JaredDyreson/SpotifyToolbox.git

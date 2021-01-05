@@ -29,8 +29,8 @@ class SpotifyPlaylist(PlaylistManager):
       super().__init__(manager.user_id, manager.token)
       self.url = self.parse_url(url)
 
-      self.tracks = tracks if tracks else self.get_track_ids()
-      # if(len(tracks) == 0): self.tracks = self.get_track_ids()
+      # self.tracks = tracks if tracks else self.get_track_ids()
+      if(len(tracks) == 0): self.tracks = self.get_track_ids()
       self.api_response = self.get_response()
       self.name = name
       if((self.name is None) and (self.url is not None)):

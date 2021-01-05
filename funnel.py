@@ -1,0 +1,114 @@
+#!/usr/bin/env python3.8
+
+from datetime import datetime
+import argparse
+import os
+import threading
+import re
+
+from SpotifyAuthenticator import application, CredentialIngestor
+from SpotifyToolbox.SpotifyToolbox import HelperFunctions, PersonalStatistics
+from FunnelCake import SpotifyHelper, PlaylistManager
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-a", "--authenticate", help="authenticate user", action="store_false")
+
+# example usage : funnel --batch-clone --from-file "example-links.txt" --output "collated from work"
+
+parser.add_argument("--batch-clone", help="batch clone links from file", action="store_true")
+
+parser.add_argument("--count", help="set length of action", type=int)
+
+parser.add_argument("--clone", help="clone url given", type=str)
+
+parser.add_argument("--currently-playing", help="get currently playing song", action="store_true")
+
+# example usage: funnel --delimiter "|" --batch-clone --from-list "https://google.com|https://reddit.com"
+
+parser.add_argument("--delimiter", help="delimiter for separated lists", type=str)
+
+parser.add_argument("-f", "--from-file", help="read Spotify playlist links from file", type=str)
+
+parser.add_argument("--force-override", help="force actions to happen", action="store_true")
+
+parser.add_argument("--from-list", help="read Spotify playlist links from delimited set of strings", type=str)
+
+parser.add_argument("-o", "--output", help="give output a destination name", type=str)
+
+parser.add_argument("--personal-stats", help="dump user statistics like Spotify does", action="store_true")
+
+parser.add_argument("--radom-playlist", help="generate a random playlist")
+
+parser.add_argument("-v", "--verbosity", action="count", default=0)
+
+parser.add_argument("--volume", help="flag that a collection of urls are apart of a volume", action="store_true")
+
+arguments = parser.parse_args()
+
+creds = None
+path = "credentials.json"
+container = []
+_re = re.compile("https://open\.spotify\.com/playlist/[a-zA-Z0-9]+")
+
+"""
+ensure that the user is authenticated
+"""
+
+if(os.path.exists(path)):
+    print("[+] Checking if the credentials are valid...")
+    creds = CredentialIngestor.CredentialIngestor(path)
+    if(not creds.is_expired(datetime.now())):
+        print("[-] No need to authenticate")
+    else:
+        HelperFunctions.authenticate(application.run)
+else:
+    HelperFunctions.authenticate(application.run)
+
+if not(creds):
+    quit()
+# creds = CredentialIngestor.CredentialIngestor(path) if not creds else creds
+
+
+
+"""
+create manager
+"""
+
+manager = PlaylistManager.PlaylistManager(creds.get_user_id(), creds.get_credential_hash())
+
+"""
+various functions that can be used
+"""
+
+# TODO
+if(arguments.personal_stats):
+    PersonalStatistics.personal_statistics()
+if(arguments.from_list):
+    if(not arguments.delimiter):
+        print("[WARNING] Please use a delimiter such as \'|\' or ',' for string lists, defaulting to ',' (comma)")
+        arguments.delimiter = ","
+    container = arguments.from_list.split(arguments.delimiter)
+
+if(arguments.from_file):
+    if not(os.path.exists(arguments.from_file)):
+        print(f'[ERROR] File specified at {arguments.from_file} does not exist, cowardly refusing')
+    else:
+        with open(arguments.from_file) as f:
+            container = [x.strip() for x in f.readlines()]
+
+if(arguments.clone):
+    container.append(arguments.clone)
+
+"""
+since we've made string list and file contents indistinguishable from each other, we can apply
+the same functions on them
+"""
+
+if(container and (arguments.clone or arguments.batch_clone)):
+    for entity in container:
+        if not(_re.match(entity)):
+            print(f'[ERROR] URL {entity} does not conform to regex {_re}, will not process')
+        else:
+            print(f'[+] Cloning {entity}')
+            SpotifyHelper.clone(manager, entity)

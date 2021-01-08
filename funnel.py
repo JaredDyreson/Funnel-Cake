@@ -5,18 +5,31 @@ import argparse
 import os
 import threading
 import re
+from aenum import Enum
 
 from SpotifyAuthenticator import application, CredentialIngestor
 from SpotifyToolbox.SpotifyToolbox import HelperFunctions, PersonalStatistics
 from FunnelCake import SpotifyHelper, PlaylistManager
 
+"""
+TODO
+"""
+
+class Confidence:
+    # default levels
+    # margins increase/decrease at rate of 0.1 in the range [0 - 1]
+    LIVE = 0.8
+    ACOUSTIC = 0.23
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-a", "--authenticate", help="authenticate user", action="store_false")
 
+parser.add_argument("--analyze-playlist", help="dump useful data about a playlist (artist, genre distribution)", action="store_true")
+
 # example usage : funnel --batch-clone --from-file "example-links.txt" --output "collated from work"
 
-parser.add_argument("--batch-clone", help="batch clone links from file", action="store_true")
+parser.add_argument("--batch-clone", help="apply functions to swathes of Spotify links", action="store_true")
 
 parser.add_argument("--count", help="set length of action", type=int)
 
@@ -28,6 +41,8 @@ parser.add_argument("--currently-playing", help="get currently playing song", ac
 
 parser.add_argument("--delimiter", help="delimiter for separated lists", type=str)
 
+parser.add_argument("--dry-run", help="do not modify playlist(s) during code execution", action="store_true")
+
 parser.add_argument("-f", "--from-file", help="read Spotify playlist links from file", type=str)
 
 parser.add_argument("--force-override", help="force actions to happen", action="store_true")
@@ -37,6 +52,12 @@ parser.add_argument("--from-list", help="read Spotify playlist links from delimi
 parser.add_argument("-o", "--output", help="give output a destination name", type=str)
 
 parser.add_argument("--personal-stats", help="dump user statistics like Spotify does", action="store_true")
+
+parser.add_argument("--remove-non-explicit", help="remove all not explicit tracks", action="store_true")
+
+parser.add_argument("--remove-explicit", help="remove all explicit tracks", action="store_true")
+
+parser.add_argument("--remove-live", help="remove all live tracks", action="store_true")
 
 parser.add_argument("--radom-playlist", help="generate a random playlist")
 
@@ -81,6 +102,10 @@ manager = PlaylistManager.PlaylistManager(creds.get_user_id(), creds.get_credent
 various functions that can be used
 """
 
+if(arguments.dry_run):
+    # TODO : implement
+    print("[WARNING] Dry run activated, all actions here will not be permanent")
+
 # TODO
 if(arguments.personal_stats):
     PersonalStatistics.personal_statistics()
@@ -111,4 +136,4 @@ if(container and (arguments.clone or arguments.batch_clone)):
             print(f'[ERROR] URL {entity} does not conform to regex {_re}, will not process')
         else:
             print(f'[+] Cloning {entity}')
-            SpotifyHelper.clone(manager, entity)
+            SpotifyHelper.clone(manager, entity) if not arguements.dry_run

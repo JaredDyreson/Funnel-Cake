@@ -60,14 +60,16 @@ class PlaylistManager(object):
         """
         return (playlist_name in self.user_playlist_names())
 
-    def create(self, destination: str):
+    def create(self, destination: str, collab=False, description=""):
        """
        Create a playlist and return it's link if success or False if unsuccessful.
        """
 
        if not(self.is_playlist(destination)):
         return self.elevated_credentials.user_playlist_create(
-              self.user_id,
-              destination
+              user=self.user_id,
+              name=destination,
+              public=True,
+              description=description
         )['external_urls']['spotify']
        return False

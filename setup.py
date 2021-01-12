@@ -29,30 +29,9 @@ setup(
     packages=[PKG_NAME],
     install_requires = [
         # TODO : look to see if you can remove any of these
-        'certifi',
-        'chardet',
-        'Click',
-        'cycler',
-        'Flask',
-        'Flask-OAuthlib',
-        'Flask-WTF',
-        'idna',
-        'itsdangerous',
-        'Jinja2',
-        'kiwisolver',
-        'MarkupSafe',
+        'SpotifyAuthenticator @ git+https://github.com/JaredDyreson/SpotifyAuthenticator',
         'matplotlib',
-        'numpy',
-        'oauthlib',
-        'pyparsing',
-        'python-dateutil',
-        'requests',
-        'requests-oauthlib',
-        'six',
-        'spotipy',
-        'urllib3',
-        'Werkzeug',
-        'WTForms'
+        'spotipy'
     ],
     include_package_data=True,
     classifiers=['Programming Language :: Python :: 3.8']

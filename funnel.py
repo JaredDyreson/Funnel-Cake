@@ -8,8 +8,8 @@ import re
 from aenum import Enum
 
 from SpotifyAuthenticator import application, CredentialIngestor
-from SpotifyToolbox.SpotifyToolbox import HelperFunctions, PersonalStatistics
-from FunnelCake import SpotifyHelper, PlaylistManager
+from SpotifyToolbox import HelperFunctions, PersonalStatistics
+from FunnelCake import SpotifyHelper, PlaylistManager, SpotifyPlaylist
 
 """
 TODO
@@ -49,6 +49,8 @@ parser.add_argument("--force-override", help="force actions to happen", action="
 
 parser.add_argument("--from-list", help="read Spotify playlist links from delimited set of strings", type=str)
 
+parser.add_argument("--merge", help="merge two or more playlists into one", action="store_true")
+
 parser.add_argument("-o", "--output", help="give output a destination name", type=str)
 
 parser.add_argument("--personal-stats", help="dump user statistics like Spotify does", action="store_true")
@@ -75,7 +77,6 @@ _re = re.compile("https://open\.spotify\.com/playlist/[a-zA-Z0-9]+")
 """
 ensure that the user is authenticated
 """
-
 if(os.path.exists(path)):
     print("[+] Checking if the credentials are valid...")
     creds = CredentialIngestor.CredentialIngestor(path)
@@ -86,11 +87,9 @@ if(os.path.exists(path)):
 else:
     HelperFunctions.authenticate(application.run)
 
-if not(creds):
+if(not creds
+   or not arguments.authenticate):
     quit()
-# creds = CredentialIngestor.CredentialIngestor(path) if not creds else creds
-
-
 
 """
 create manager
@@ -105,6 +104,10 @@ various functions that can be used
 if(arguments.dry_run):
     # TODO : implement
     print("[WARNING] Dry run activated, all actions here will not be permanent")
+
+if(arguments.dry_run and arguments.force_override):
+    print("[ERROR] Conflicting arguments --dry-run and --force-removal, cowardly refusing")
+    quit()
 
 # TODO
 if(arguments.personal_stats):
@@ -130,10 +133,18 @@ since we've made string list and file contents indistinguishable from each other
 the same functions on them
 """
 
+# CLONE
+
 if(container and (arguments.clone or arguments.batch_clone)):
     for entity in container:
         if not(_re.match(entity)):
             print(f'[ERROR] URL {entity} does not conform to regex {_re}, will not process')
         else:
             print(f'[+] Cloning {entity}')
-            SpotifyHelper.clone(manager, entity) if not arguements.dry_run
+            if not(arguments.dry_run):
+                SpotifyHelper.clone(manager, entity, arguments.force_override, arguments.output)
+# MERGE
+
+
+if(container and (arguments.merge)):
+    SpotifyHelper.merge(container, manager, arguments.output)

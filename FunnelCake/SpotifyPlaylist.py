@@ -1,8 +1,9 @@
 from FunnelCake.PlaylistManager import PlaylistManager
-import re
-import os
-import requests
+
 import json
+import os
+import re
+import requests
 
 class Track():
     def __init__(self, name: str, id_ : str, liveliness: float):
@@ -29,7 +30,6 @@ class SpotifyPlaylist(PlaylistManager):
       super().__init__(manager.user_id, manager.token)
       self.url = self.parse_url(url)
 
-      # self.tracks = tracks if tracks else self.get_track_ids()
       if(len(tracks) == 0): self.tracks = self.get_track_ids()
       self.api_response = self.get_response()
       self.name = name
@@ -120,6 +120,14 @@ class SpotifyPlaylist(PlaylistManager):
         try: return self.api_response["owner"]["id"]
         except KeyError: return ""
 
+    def playlist_owner_display_name(self) -> str:
+
+        """
+        Parse the response to grab the playlist's owner name.
+        """
+
+        return self.api_response["owner"]["display_name"]
+
     def playlist_name(self) -> str:
 
         """
@@ -145,8 +153,6 @@ class SpotifyPlaylist(PlaylistManager):
       return self.tracks
 
     def get_playlist_tracks(self) -> list:
-
-      # results = self.non_elevated_credentials.user_playlist_tracks(self.user_id, playlist_id="{}".format(self.playlist_id()))
       results = self.non_elevated_credentials.user_playlist_tracks(self.user_id, playlist_id=self.playlist_id())
       tracks = results['items']
       while results['next']:
@@ -168,7 +174,6 @@ class SpotifyPlaylist(PlaylistManager):
         Insert the contents of container into the current instance of the playlist.
         """
 
-# track_list_uris = ["spotify:track:{}".format(element) for element in container]
         track_list_uris = [f"spotify:track:{uri}" for uri in container]
         url = f"https://api.spotify.com/v1/users/{self.user_id}/playlists/{self.playlist_id()}/tracks?position=0"
         headers = {
@@ -187,7 +192,7 @@ class SpotifyPlaylist(PlaylistManager):
 
             if(request.status_code != 201):
                 raise ValueError(f'Error: Request returned status code {request.status_code}. Returned: {request.text}')
-# this is the new tracks attribute
+        # this is the new tracks attribute
         self.tracks = container
 
     def get_detailed_track_info(self) -> list:
@@ -195,11 +200,9 @@ class SpotifyPlaylist(PlaylistManager):
       headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        # 'Authorization': 'Bearer {}'.format(self.token)
         'Authorization': f'Bearer {self.token}'
       }
 
-      # container = ["{}/{}".format(url, track) for track in self.tracks]
       container = [f"{url}/{track}" for track in self.tracks]
       return [json.loads(requests.get(element, headers=headers).content) for element in container]
 

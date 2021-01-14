@@ -73,3 +73,12 @@ class PlaylistManager(object):
               description=description
         )['external_urls']['spotify']
        return False
+
+    def list_genre_seeds(self):
+        header = {
+         'Accept': 'application/json',
+         'Content-Type': 'application/json',
+         'Authorization': f'Bearer {self.token}'
+        }
+        response = requests.get('https://api.spotify.com/v1/recommendations/available-genre-seeds', headers=header)
+        return json.loads(response.text)['genres']

@@ -6,10 +6,14 @@ import os
 import threading
 import re
 from aenum import Enum
+from pprint import pprint
+import random
+# import threading
+import functools
 
 from SpotifyAuthenticator import application, CredentialIngestor
 from SpotifyToolbox import HelperFunctions, PersonalStatistics
-from FunnelCake import SpotifyHelper, PlaylistManager, SpotifyPlaylist
+from FunnelCake import SpotifyHelper, PlaylistManager, SpotifyPlaylist, PlaylistGenerator
 
 """
 TODO
@@ -23,7 +27,7 @@ class Confidence:
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-a", "--authenticate", help="authenticate user", action="store_false")
+parser.add_argument("-a", "--authenticate", help="authenticate user", action="store_true")
 
 parser.add_argument("--analyze-playlist", help="dump useful data about a playlist (artist, genre distribution)", action="store_true")
 
@@ -34,8 +38,6 @@ parser.add_argument("--batch-clone", help="apply functions to swathes of Spotify
 parser.add_argument("--count", help="set length of action", type=int)
 
 parser.add_argument("--clone", help="clone url given", type=str)
-
-parser.add_argument("--currently-playing", help="get currently playing song", action="store_true")
 
 # example usage: funnel --delimiter "|" --batch-clone --from-list "https://google.com|https://reddit.com"
 
@@ -51,7 +53,11 @@ parser.add_argument("--from-list", help="read Spotify playlist links from delimi
 
 parser.add_argument("--merge", help="merge two or more playlists into one", action="store_true")
 
+# parser.add_argument("-l", "--liveosity", help="increase or", action="count", default=0)
+
 parser.add_argument("-o", "--output", help="give output a destination name", type=str)
+
+# parser.add_argument("--save-cover-art", help="save cover art of each playlist", action="store_true")
 
 parser.add_argument("--personal-stats", help="dump user statistics like Spotify does", action="store_true")
 
@@ -61,15 +67,15 @@ parser.add_argument("--remove-explicit", help="remove all explicit tracks", acti
 
 parser.add_argument("--remove-live", help="remove all live tracks", action="store_true")
 
-parser.add_argument("--radom-playlist", help="generate a random playlist")
+parser.add_argument("--random-playlist", help="generate a random playlist", action="store_true")
 
-parser.add_argument("-v", "--verbosity", action="count", default=0)
+# parser.add_argument("-v", "--verbosity", action="count", default=0)
 
-parser.add_argument("--volume", help="flag that a collection of urls are apart of a volume", action="store_true")
+# parser.add_argument("--volume", help="flag that a collection of urls are apart of a volume", action="store_true")
 
 arguments = parser.parse_args()
 
-creds = None
+creds, manager, generator = None, None, None
 path = "credentials.json"
 container = []
 _re = re.compile("https://open\.spotify\.com/playlist/[a-zA-Z0-9]+")
@@ -77,25 +83,27 @@ _re = re.compile("https://open\.spotify\.com/playlist/[a-zA-Z0-9]+")
 """
 ensure that the user is authenticated
 """
-if(os.path.exists(path)):
-    print("[+] Checking if the credentials are valid...")
-    creds = CredentialIngestor.CredentialIngestor(path)
-    if(not creds.is_expired(datetime.now())):
-        print("[-] No need to authenticate")
-    else:
-        HelperFunctions.authenticate(application.run)
-else:
+if(arguments.authenticate):
     HelperFunctions.authenticate(application.run)
-
-if(not creds
-   or not arguments.authenticate):
-    quit()
+else:
+    if(os.path.exists(path)):
+        print("[+] Checking if the credentials are valid...")
+        creds = CredentialIngestor.CredentialIngestor(path)
+        if(not creds.is_expired(datetime.now())):
+            print("[-] No need to authenticate")
+            manager = PlaylistManager.PlaylistManager(creds.get_user_id(), creds.get_credential_hash())
+            generator = PlaylistGenerator.PlaylistGenerator(manager)
+        else:
+            print('[ERROR] Please authenticate before proceeding; "funnel --authenticate"')
+            quit()
+    else:
+        print('[ERROR] Please authenticate before proceeding; "funnel --authenticate"')
+        quit()
 
 """
-create manager
+create a manager that Karen's can't call
 """
 
-manager = PlaylistManager.PlaylistManager(creds.get_user_id(), creds.get_credential_hash())
 
 """
 various functions that can be used
@@ -103,15 +111,20 @@ various functions that can be used
 
 if(arguments.dry_run):
     # TODO : implement
-    print("[WARNING] Dry run activated, all actions here will not be permanent")
+    print("[WARNING] Dry run activated, all actions here will not be permanent (NOT CURRENTLY IMPLEMENTED!)")
 
 if(arguments.dry_run and arguments.force_override):
     print("[ERROR] Conflicting arguments --dry-run and --force-removal, cowardly refusing")
     quit()
 
-# TODO
+# PERSONAL STATS
+
 if(arguments.personal_stats):
     PersonalStatistics.personal_statistics()
+    quit()
+
+# PROCESSING INPUT
+
 if(arguments.from_list):
     if(not arguments.delimiter):
         print("[WARNING] Please use a delimiter such as \'|\' or ',' for string lists, defaulting to ',' (comma)")
@@ -138,13 +151,46 @@ the same functions on them
 if(container and (arguments.clone or arguments.batch_clone)):
     for entity in container:
         if not(_re.match(entity)):
-            print(f'[ERROR] URL {entity} does not conform to regex {_re}, will not process')
+            print(f'[ERROR] URL {entity} does not conform to regex, it will not be processed')
         else:
             print(f'[+] Cloning {entity}')
             if not(arguments.dry_run):
                 SpotifyHelper.clone(manager, entity, arguments.force_override, arguments.output)
-# MERGE
 
+# MERGE
 
 if(container and (arguments.merge)):
     SpotifyHelper.merge(container, manager, arguments.output)
+
+# REMOVE ON CRITERIA
+
+if(container and (arguments.remove_live or arguments.remove_explicit or arguments.remove_non_explicit)):
+    for playlist in container:
+        p = SpotifyPlaylist.SpotifyPlaylist.from_url(manager, playlist)
+        if(arguments.remove_explicit):
+            p.remove_explicits()
+        if(arguments.remove_non_explicit):
+            p.remove_non_explicits()
+        if(arguments.remove_live):
+            p.remove_live_tracks()
+        # if(arguments.save_cover_art):
+            # p.get_cover()
+
+# RANDOM PLAYLIST
+
+
+if(arguments.random_playlist and arguments.from_list):
+    _re = re.compile("(?P<action>(artist|genre|song))\:(?P<list>([a-zA-Z]+\s*,?)+)")
+    match = _re.match(arguments.from_list)
+    action, content =  None, None
+    if(match):
+        action, content = match.group("action"), match.group("list")
+    else:
+        print('[ERROR] Please ensure you use the preapproved actions [artist, genre, song] and provide a comma separated list. Example: "artist:Metallica,Flux Pavillion"')
+        quit()
+    if(action == "artist"):
+        generator.random_artist_playlist(content.split(','), arguments.count, arguments.output)
+    if(action == "genre"):
+        generator.random_genre_playlist(content, len(content), arguments.count, arguments.output)
+    # if(action = "song"):
+        # print("working on this shit")

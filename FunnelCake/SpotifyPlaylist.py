@@ -4,6 +4,12 @@ import json
 import os
 import re
 import requests
+from collections import ChainMap
+from pprint import pprint
+from iteration_utilities import deepflatten
+
+def clamp(n, minn, maxn):
+    return max(min(maxn, n), minn)
 
 class Track():
     def __init__(self, name: str, id_ : str, liveliness: float):
@@ -17,24 +23,33 @@ class Track():
 
 class SpotifyPlaylist(PlaylistManager):
     def __init__(self, manager: PlaylistManager, tracks: list, url=None, name=None):
-      """
-      Constructor for the Playlist class.
-      We inherit the PlaylistManager class because we don't always want to have a manager
-      object passed into our functions.
-      """
+        """
+        Constructor for the Playlist class.
+        We inherit the PlaylistManager class because we don't always want to have a manager
+        object passed into our functions.
+        """
 
-      if(not isinstance(manager, PlaylistManager) or
-         not isinstance(tracks, list)):
-         raise ValueError
-      self.tracks = []
-      super().__init__(manager.user_id, manager.token)
-      self.url = self.parse_url(url)
+        if(not isinstance(manager, PlaylistManager) or
+           not isinstance(tracks, list)):
+            raise ValueError
 
-      if(len(tracks) == 0): self.tracks = self.get_track_ids()
-      self.api_response = self.get_response()
-      self.name = name
-      if((self.name is None) and (self.url is not None)):
-        self.name = self.playlist_name()
+        self.headers = {
+         'Accept': 'application/json',
+         'Content-Type': 'application/json',
+         'Authorization': f'Bearer {manager.token}'
+        }
+
+        self.tracks = []
+        super().__init__(manager.user_id, manager.token)
+        self.url = self.parse_url(url)
+
+        if(len(tracks) == 0): self.tracks = self.get_track_ids()
+        self.api_response = self.get_response()
+        self.name = name
+        if((self.name is None) and (self.url is not None)):
+            self.name = self.playlist_name()
+
+
 
     def __add__(self, other) -> list:
         """
@@ -47,6 +62,7 @@ class SpotifyPlaylist(PlaylistManager):
         Find the intersection of both lists
         """
         return list(set(self.tracks) & set(other.tracks))
+
     def __eq__(self, other) -> bool:
         """
         Check if both objects are the same
@@ -88,7 +104,6 @@ class SpotifyPlaylist(PlaylistManager):
        Conform the url to look like the web player format.
        """
 
-       # return "https://open.spotify.com/playlist/{}".format(self.url_base())
        return f"https://open.spotify.com/playlist/{self.url_base()}"
 
     def get_response(self) -> dict:
@@ -97,16 +112,15 @@ class SpotifyPlaylist(PlaylistManager):
        response to get the necessary information.
        """
 
-       # if(self.url is None): return ""
        if not(self.url): return ""
-       # url = "https://api.spotify.com/v1/playlists/{}".format(self.playlist_id())
+
        url = f"https://api.spotify.com/v1/playlists/{self.playlist_id()}"
-       headers = {
-         'Accept': 'application/json',
-         'Content-Type': 'application/json',
-         'Authorization': f'Bearer {self.token}'
-       }
-       request = requests.get(url, headers=headers)
+       # headers = {
+         # 'Accept': 'application/json',
+         # 'Content-Type': 'application/json',
+         # 'Authorization': f'Bearer {self.token}'
+       # }
+       request = requests.get(url, headers=self.headers)
        if(request.status_code != 200):
          raise Exception(f"Error: Request returned status code {request.status_code}. Message: {request.text}")
        return json.loads(request.content)
@@ -160,14 +174,6 @@ class SpotifyPlaylist(PlaylistManager):
         tracks.extend(results['items'])
       return tracks
 
-    def truncate(self) -> None:
-      """
-      Remove all tracks from a playlist.
-      """
-      self.elevated_credentials.user_playlist_remove_all_occurrences_of_tracks(
-          self.user_id, self.playlist_id(), self.tracks
-      )
-
     def append(self, container: list) -> None:
 
         """
@@ -176,11 +182,11 @@ class SpotifyPlaylist(PlaylistManager):
 
         track_list_uris = [f"spotify:track:{uri}" for uri in container]
         url = f"https://api.spotify.com/v1/users/{self.user_id}/playlists/{self.playlist_id()}/tracks?position=0"
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.token}'
-        }
+        # headers = {
+            # 'Accept': 'application/json',
+            # 'Content-Type': 'application/json',
+            # 'Authorization': f'Bearer {self.token}'
+        # }
         # there is a 100 track limit per request, we need to make multiple requests if this is the case
         chunks = [track_list_uris[x:x+100] for x in range(0, len(track_list_uris), 100)]
         for uri_chunk in chunks:
@@ -188,7 +194,7 @@ class SpotifyPlaylist(PlaylistManager):
                 "position": 0,
                 "uris": uri_chunk
             }
-            request = requests.post(url, headers=headers, data=json.dumps(payload))
+            request = requests.post(url, headers=self.headers, data=json.dumps(payload))
 
             if(request.status_code != 201):
                 raise ValueError(f'Error: Request returned status code {request.status_code}. Returned: {request.text}')
@@ -196,49 +202,67 @@ class SpotifyPlaylist(PlaylistManager):
         self.tracks = container
 
     def get_detailed_track_info(self) -> list:
-      url = "https://api.spotify.com/v1/tracks"
-      headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {self.token}'
-      }
+        # headers = {
+            # 'Accept': 'application/json',
+            # 'Content-Type': 'application/json',
+            # 'Authorization': f'Bearer {self.token}',
+        # }
 
-      container = [f"{url}/{track}" for track in self.tracks]
-      return [json.loads(requests.get(element, headers=headers).content) for element in container]
+
+        chunks = [self.tracks[x:x+50] for x in range(0, len(self.tracks), 50)]
+        container = []
+        for chunk in chunks:
+            params = (
+                ('ids', ','.join(chunk)),
+                ('market', 'ES'),
+            )
+
+            response = requests.get('https://api.spotify.com/v1/tracks', headers=self.headers, params=params)
+            container.append(response.text)
+        return [json.loads(response)['tracks'] for response in container]
 
     def find_explicit(self) -> list:
-        return [element['id'] for element in self.get_detailed_track_info() if(element['explicit'])]
-
-    def find_live(self) -> list:
-        # TODO
+        container = []
         for element in self.get_detailed_track_info():
-            id_ = element['id']
-            url = f"https://api.spotify.com/v1/audio-features/{id_}"
-            headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': f'Bearer {self.token}'
-            }
-            content = json.loads(requests.get(headers=headers).content)
-            track = Track(element['name'], id_)
-            # if(re.search('live', element))
+            for subelement in element:
+                if(subelement['explicit']):
+                    container.append({subelement['id']: subelement['name']})
+        return container
 
-        return []
-        # container = [element for element in self.get_detailed_track_info() if re.search('live', element['name'], re.IGNORE_CASE)]
-        # return container
+    def find_live(self, confidence=0) -> list:
+        # headers = {
+            # 'Accept': 'application/json',
+            # 'Content-Type': 'application/json',
+            # 'Authorization': f'Bearer {self.token}',
+        # }
+
+        chunks = [self.tracks[x:x+100] for x in range(0, len(self.tracks), 100)]
+        container = []
+        tracks = []
+        for chunk in chunks:
+            params = (
+                ('ids', ','.join(chunk)),
+            )
+
+            response = requests.get('https://api.spotify.com/v1/audio-features', headers=self.headers, params=params)
+            for element in json.loads(response.text)['audio_features']:
+                if(element['liveness'] >= (clamp(0.8 + confidence, 0, 1))):
+                    tracks.append(element['id'])
+        return tracks
+
     def remove(self, container: list) -> None:
       url = "https://api.spotify.com/v1/playlists/{}/tracks".format(self.playlist_id())
       payload = {
         "tracks": []
       }
 
-      headers = {
-        'Accept': 'application/json', 
-        'Content-Type': 'application/json', 
-        'Authorization': 'Bearer {}'.format(self.token)
-      }
+      # headers = {
+        # 'Accept': 'application/json',
+        # 'Content-Type': 'application/json',
+        # 'Authorization': f'Bearer {self.token}'
+      # }
 
-      track_list_uris = ["spotify:track:{}".format(track) for track in container]
+      track_list_uris = [f"spotify:track:{track}" for track in container]
       chunks = [track_list_uris[x:x+100] for x in range(0, len(track_list_uris), 100)]
       for row in chunks:
         for index, element in enumerate(row):
@@ -247,5 +271,42 @@ class SpotifyPlaylist(PlaylistManager):
               "position": index
             }
             payload["tracks"].append(data)
-        requests.delete(url, headers=headers, data=json.dumps(payload))
+        requests.delete(url, headers=self.headers, data=json.dumps(payload))
         payload["tracks"] = []
+
+    def truncate(self) -> None:
+      """
+      Remove all tracks from a playlist.
+      """
+      self.elevated_credentials.user_playlist_remove_all_occurrences_of_tracks(
+          self.user_id, self.playlist_id(), self.tracks
+      )
+
+    def remove_explicits(self):
+        explicits = self.find_explicit()
+        for track in explicits:
+            self.remove(list(track.keys()))
+
+    def remove_non_explicits(self):
+        exps = set()
+        explicits = self.find_explicit()
+        for track in explicits:
+            exps.add(*list(track.keys()))
+        explicits = exps
+        non_explicits = list(set(self.tracks) - explicits)
+        self.remove(non_explicits)
+
+    def remove_live_tracks(self):
+        self.remove(self.find_live())
+
+    def get_asset(self, url: str, output=None) -> None:
+        request = requests.get(url)
+        name = os.path.basename(url) if not output else output
+        with open(name, 'wb') as f:
+            f.write(request.content)
+        print(f'[+] Saved asset at {name}')
+
+    def get_cover(self):
+        response = requests.get(f'https://api.spotify.com/v1/playlists/{self.playlist_id()}/images', headers=self.headers)
+        url = json.loads(response.text)[0]['url']
+        self.get_asset(url, f'{self.name} Cover Art.png')

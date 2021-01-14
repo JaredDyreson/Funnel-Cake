@@ -184,12 +184,12 @@ if(arguments.random_playlist and arguments.from_list):
     match = _re.match(arguments.from_list)
     action, content =  None, None
     if(match):
-        action, content = match.group("action"), match.group("list")
+        action, content = match.group("action"), set(match.group("list").split(','))
     else:
         print('[ERROR] Please ensure you use the preapproved actions [artist, genre, song] and provide a comma separated list. Example: "artist:Metallica,Flux Pavillion"')
         quit()
     if(action == "artist"):
-        generator.random_artist_playlist(content.split(','), arguments.count, arguments.output)
+        generator.random_artist_playlist(content, arguments.count, arguments.output)
     if(action == "genre"):
         generator.random_genre_playlist(content, len(content), arguments.count, arguments.output)
     # if(action = "song"):

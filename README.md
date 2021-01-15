@@ -65,11 +65,43 @@ funnel --batch-clone --from-file 'punk_playlist_compilation'
 
 ```bash
 # Clone an entire user's *public* playlist library
-# TBA
 
 funnel --batch-clone --from-user '[LINK(S) TO PROFILE]' --delimiter '|' 
+
 # Description: Cloned playlist from {username} at {current time} (apart of user dump)
 # Mostly used for migration purposes from account to account
 # add --allow-private-playlists ?
 
+```
+
+### Random Playlist
+
+We can randomly generate playlists based on two criteria; artists and genres.
+The default number of tracks is 10 however the maximum is 100.
+If no criteria is given, the program will use the genres available via the Spotify API and will use at most two genres.
+The API actually supports a mixing of artists and genres, allowing for a total of five "dimensions" of complexity.
+However, we are only concerned with one avenue of input, however they can support up to five of each.
+
+```bash
+python funnel.py --random-playlist --from-list "artist:Metallica,Flux Pavillion" --output "Metallic Dubstep"
+# if I don't give the amount, the default is 10
+
+# python funnel.py --random-playlist --from-list "artist:Metallica,Flux Pavillion" --count 50 --output "Metallic Dubstep"
+# Here we have a new playlist of 50 ^
+```
+
+```bash
+python funnel.py --random-playlist --from-list "genre:classical" --output "Classical Trip"
+# if I don't give the amount, the default is 10
+
+# python funnel.py --random-playlist --from-list "genre:classical" --count 50 --output "Classical Trip"
+# Here we have a new playlist of 50 ^
+```
+
+```bash
+python funnel.py --random-playlist
+# randomly generates playlist from selected genre (default 10)
+
+# python funnel.py --random-playlist --output "Random Playlist Example"
+# you can also give it an output name if you feel like it
 ```

@@ -182,11 +182,6 @@ class SpotifyPlaylist(PlaylistManager):
 
         track_list_uris = [f"spotify:track:{uri}" for uri in container]
         url = f"https://api.spotify.com/v1/users/{self.user_id}/playlists/{self.playlist_id()}/tracks?position=0"
-        # headers = {
-            # 'Accept': 'application/json',
-            # 'Content-Type': 'application/json',
-            # 'Authorization': f'Bearer {self.token}'
-        # }
         # there is a 100 track limit per request, we need to make multiple requests if this is the case
         chunks = [track_list_uris[x:x+100] for x in range(0, len(track_list_uris), 100)]
         for uri_chunk in chunks:
@@ -202,13 +197,6 @@ class SpotifyPlaylist(PlaylistManager):
         self.tracks = container
 
     def get_detailed_track_info(self) -> list:
-        # headers = {
-            # 'Accept': 'application/json',
-            # 'Content-Type': 'application/json',
-            # 'Authorization': f'Bearer {self.token}',
-        # }
-
-
         chunks = [self.tracks[x:x+50] for x in range(0, len(self.tracks), 50)]
         container = []
         for chunk in chunks:
@@ -230,12 +218,6 @@ class SpotifyPlaylist(PlaylistManager):
         return container
 
     def find_live(self, confidence=0) -> list:
-        # headers = {
-            # 'Accept': 'application/json',
-            # 'Content-Type': 'application/json',
-            # 'Authorization': f'Bearer {self.token}',
-        # }
-
         chunks = [self.tracks[x:x+100] for x in range(0, len(self.tracks), 100)]
         container = []
         tracks = []
@@ -255,12 +237,6 @@ class SpotifyPlaylist(PlaylistManager):
       payload = {
         "tracks": []
       }
-
-      # headers = {
-        # 'Accept': 'application/json',
-        # 'Content-Type': 'application/json',
-        # 'Authorization': f'Bearer {self.token}'
-      # }
 
       track_list_uris = [f"spotify:track:{track}" for track in container]
       chunks = [track_list_uris[x:x+100] for x in range(0, len(track_list_uris), 100)]

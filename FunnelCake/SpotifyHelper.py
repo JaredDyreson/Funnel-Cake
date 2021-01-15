@@ -5,6 +5,7 @@ attempts to control functions that would directly manipulate Spotify playlists (
 from . import SpotifyPlaylist
 from . import PlaylistManager
 import re
+from pprint import pprint
 
 def clone(manager: PlaylistManager, src: str, force_override=False, custom_name=None):
     if (not isinstance(manager, PlaylistManager.PlaylistManager) or
@@ -52,3 +53,18 @@ def merge(container: list, manager: PlaylistManager, output_name: str):
     else:
         new_playlist.append(master_)
         print(f'[SUCCESS] Created {output_name} from {names}')
+
+def analyze(playlist: SpotifyPlaylist, manager: PlaylistManager) -> dict:
+    artists = {}
+
+    content = [subelement for element in playlist.get_detailed_track_info() for subelement in element]
+
+    for track in content:
+        collaborators = track["artists"]
+        for element in collaborators:
+            artist = element["name"]
+            if(artist not in artists.keys()):
+                artists[artist] = 1
+            else:
+                artists[artist]+=1
+    return {k: v for k, v in sorted(artists.items(), key=lambda item: item[1])}

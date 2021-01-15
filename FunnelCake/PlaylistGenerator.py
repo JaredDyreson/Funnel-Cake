@@ -8,7 +8,7 @@ class PlaylistGenerator(PlaylistManager):
     def __init__(self, manager: PlaylistManager):
         """
         A class to randomly generate
-        playlists based oni; genres, artists, and songs
+        playlists based on; genres, artists, and songs
         """
 
         if(not isinstance(manager, PlaylistManager)):

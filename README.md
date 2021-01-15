@@ -12,7 +12,6 @@ It has these major features:
 - Randomly generate playlists based on these criteria
     * Artists
     * Genre
-    * Songs (TBA)
 
 Input can be given in the form of a delimited list of strings such as `|` or `,`
 
@@ -22,7 +21,7 @@ First, you need to authenticate yourself before proceeding.
 That can be done by doing the following:
 
 ```bash
-./funnel --authenticate
+python ./funnel.py --authenticate
 ```
 
 After authentication, you can use the following actions:
@@ -32,13 +31,13 @@ After authentication, you can use the following actions:
 ```bash
 # From a string (not as neat)
 
-funnel --merge --from-list 'https://open.spotify.com/playlist/37i9dQZF1DXasneILDRM7B|https://open.spotify.com/playlist/0GMRiKLyYuKUg3BXyFKNqT' --delimiter '|' --output "Punk Fun"
+python ./funnel.py --merge --from-list 'https://open.spotify.com/playlist/37i9dQZF1DXasneILDRM7B|https://open.spotify.com/playlist/0GMRiKLyYuKUg3BXyFKNqT' --delimiter '|' --output "Punk Fun"
 ```
 
 ```bash
 # From a file (more compact)
 
-funnel --merge --from-file 'punk_playlist_compilation' --output "Punk Fun"
+python ./funnel.py --merge --from-file 'punk_playlist_compilation' --output "Punk Fun"
 ```
 
 ### Cloning
@@ -46,19 +45,19 @@ funnel --merge --from-file 'punk_playlist_compilation' --output "Punk Fun"
 ```bash
 # Small batch
 
-funnel --clone "https://open.spotify.com/playlist/37i9dQZF1DXasneILDRM7B"
+python ./funnel.py --clone "https://open.spotify.com/playlist/37i9dQZF1DXasneILDRM7B"
 ```
 
 ```bash
 # Large batch (clunky)
 
-funnel --batch-clone --from-list 'https://open.spotify.com/playlist/37i9dQZF1DXasneILDRM7B|https://open.spotify.com/playlist/0GMRiKLyYuKUg3BXyFKNqT' --delimiter '|'
+python ./funnel.py --batch-clone --from-list 'https://open.spotify.com/playlist/37i9dQZF1DXasneILDRM7B|https://open.spotify.com/playlist/0GMRiKLyYuKUg3BXyFKNqT' --delimiter '|'
 ```
 
 ```bash
 # Large batch (preferred)
 
-funnel --batch-clone --from-file 'punk_playlist_compilation'
+python ./funnel.py --batch-clone --from-file 'punk_playlist_compilation'
 
 # Each are created rather a catenation in the --merge option
 ```
@@ -66,12 +65,10 @@ funnel --batch-clone --from-file 'punk_playlist_compilation'
 ```bash
 # Clone an entire user's *public* playlist library
 
-funnel --batch-clone --from-user '[LINK(S) TO PROFILE]' --delimiter '|' 
+python ./funnel.py --batch-clone --from-user '[LINK(S) TO PROFILE]' --delimiter '|' 
 
 # Description: Cloned playlist from {username} at {current time} (apart of user dump)
 # Mostly used for migration purposes from account to account
-# add --allow-private-playlists ?
-
 ```
 
 ### Random Playlist
@@ -83,25 +80,25 @@ The API actually supports a mixing of artists and genres, allowing for a total o
 However, we are only concerned with one avenue of input, however they can support up to five of each.
 
 ```bash
-python funnel.py --random-playlist --from-list "artist:Metallica,Flux Pavillion" --output "Metallic Dubstep"
+python ./funnel.py --random-playlist --from-list "artist:Metallica,Flux Pavillion" --output "Metallic Dubstep"
 # if I don't give the amount, the default is 10
 
-# python funnel.py --random-playlist --from-list "artist:Metallica,Flux Pavillion" --count 50 --output "Metallic Dubstep"
+# python ./funnel.py --random-playlist --from-list "artist:Metallica,Flux Pavillion" --count 50 --output "Metallic Dubstep"
 # Here we have a new playlist of 50 ^
 ```
 
 ```bash
-python funnel.py --random-playlist --from-list "genre:classical" --output "Classical Trip"
+python ./funnel.py --random-playlist --from-list "genre:classical" --output "Classical Trip"
 # if I don't give the amount, the default is 10
 
-# python funnel.py --random-playlist --from-list "genre:classical" --count 50 --output "Classical Trip"
+# python ./funnel.py --random-playlist --from-list "genre:classical" --count 50 --output "Classical Trip"
 # Here we have a new playlist of 50 ^
 ```
 
 ```bash
-python funnel.py --random-playlist
+python ./funnel.py --random-playlist
 # randomly generates playlist from selected genre (default 10)
 
-# python funnel.py --random-playlist --output "Random Playlist Example"
+# python ./funnel.py --random-playlist --output "Random Playlist Example"
 # you can also give it an output name if you feel like it
 ```

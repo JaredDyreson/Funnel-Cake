@@ -24,6 +24,8 @@ parser.add_argument("--batch-clone", help="apply functions to swathes of Spotify
 
 parser.add_argument("--count", help="set length of action", type=int)
 
+parser.add_argument("--config", help="configure the application with the application\' client id and client secret", type=str)
+
 parser.add_argument("--clone", help="clone url given", type=str)
 
 parser.add_argument("--delimiter", help="delimiter for separated lists", type=str)
@@ -78,6 +80,14 @@ else:
     else:
         print('[ERROR] Please authenticate before proceeding; "funnel --authenticate"')
         quit()
+
+if(arguments.config):
+    client_id, client_secret = input("[+] Client ID: "), input("[+] Client secret: ")
+    configuration = {
+        "client_id": client_id,
+        "client_secret": client_secret
+    }
+    pass
 
 """
 various functions that can be used

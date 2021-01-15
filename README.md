@@ -17,21 +17,7 @@ Input can be given in the form of a delimited list of strings such as `|` or `,`
 
 ## Getting Started
 
-Firstly, this project is an application that uses the Spotify API.
-Therefore to proceed, you need to register a developer account.
-That link can be found [here](https://developer.spotify.com/dashboard/login).
-Once you have an account, you should be greeted with a screen that looks like this ![](https://imgur.com/a/POBWKP1).
-
-## Example Usage
-
-First, you need to authenticate yourself before proceeding.
-That can be done by doing the following:
-
-```bash
-python ./funnel.py --authenticate
-```
-
-After authentication, you can use the following actions:
+Please consult the [wiki before proceeding](https://github.com/JaredDyreson/Funnel-Cake/wiki/Getting-Started).
 
 ### Merging
 

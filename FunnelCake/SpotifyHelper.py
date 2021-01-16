@@ -2,10 +2,11 @@
 attempts to control functions that would directly manipulate Spotify playlists (more of a collection of scripts)
 """
 
-from . import SpotifyPlaylist
-from . import PlaylistManager
-import re
+from FunnelCake import SpotifyPlaylist
+from FunnelCake import PlaylistManager
+
 from pprint import pprint
+import re
 
 def clone(manager: PlaylistManager, src: str, force_override=False, custom_name=None):
     if (not isinstance(manager, PlaylistManager.PlaylistManager) or

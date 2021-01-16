@@ -62,6 +62,16 @@ path = "credentials.json"
 container = []
 _re = re.compile("https://open\.spotify\.com/?(/user\/(?P<user>[a-zA-Z0-9]+)/)?playlist/(?P<id>[a-zA-Z0-9]+)")
 
+if(arguments.config):
+    client_id, client_secret = input("[+] Client ID: "), input("[+] Client secret: ")
+    configuration = {
+        "client_id": client_id,
+        "client_secret": client_secret
+    }
+    # This is not meant to be secure. use a database instead
+    with open("configuration.json", "w") as f:
+        f.write(json.dumps(configuration))
+
 """
 ensure that the user is authenticated
 """
@@ -82,16 +92,6 @@ else:
         print('[ERROR] Please authenticate before proceeding; "funnel --authenticate"')
         quit()
 
-if(arguments.config):
-    client_id, client_secret = input("[+] Client ID: "), input("[+] Client secret: ")
-    configuration = {
-        "client_id": client_id,
-        "client_secret": client_secret
-    }
-    # This is not meant to be secure. use a database instead
-    with open("configuration.json", "w") as f:
-        f.write(json.dumps(configuration))
-    pass
 
 """
 various functions that can be used

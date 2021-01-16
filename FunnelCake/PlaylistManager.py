@@ -15,7 +15,15 @@ class PlaylistManager(object):
         self.token = token
         self.user_id = user_id
 
-        client_secret, client_id = os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_SECRET"), os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_ID")
+        if(not os.path.exists("configuration.json")):
+            raise ValueError(f'[ERROR] Cannot find configuration')
+
+        with open("configuration.json", "r") as fp:
+            content = json.load(fp)
+
+        # client_secret, client_id = os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_SECRET"), os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_ID")
+
+        client_secret, client_id = content["client_secret"], content["client_id"]
 
         if(not client_secret or not client_id):
             raise ValueError(f'Please define client secret {client_secret} or client_id {client_id} in your terminal\'s configuration')

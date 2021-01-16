@@ -28,9 +28,10 @@ setup(
     license='GNU GPL-3.0',
     packages=[PKG_NAME],
     install_requires = [
-        # TODO : look to see if you can remove any of these
-        'SpotifyAuthenticator @ git+https://github.com/JaredDyreson/SpotifyAuthenticator',
+        'aenum',
         'matplotlib',
+        'SpotifyAuthenticator @ git+https://github.com/JaredDyreson/SpotifyAuthenticator',
+        'SpotifyToolbox @ git+https://github.com/JaredDyreson/SpotifyToolbox',
         'spotipy'
     ],
     include_package_data=True,

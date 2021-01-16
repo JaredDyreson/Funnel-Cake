@@ -6,7 +6,6 @@ import re
 import requests
 from collections import ChainMap
 from pprint import pprint
-from iteration_utilities import deepflatten
 
 def clamp(n, minn, maxn):
     return max(min(maxn, n), minn)

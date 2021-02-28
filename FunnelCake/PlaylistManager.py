@@ -15,7 +15,15 @@ class PlaylistManager(object):
         self.token = token
         self.user_id = user_id
 
-        client_secret, client_id = os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_SECRET"), os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_ID")
+        if(not os.path.exists("configuration.json")):
+            raise ValueError(f'[ERROR] Cannot find configuration')
+
+        with open("configuration.json", "r") as fp:
+            content = json.load(fp)
+
+        # client_secret, client_id = os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_SECRET"), os.environ.get("SPOTIFY_AUTHENTICATOR_CLIENT_ID")
+
+        client_secret, client_id = content["client_secret"], content["client_id"]
 
         if(not client_secret or not client_id):
             raise ValueError(f'Please define client secret {client_secret} or client_id {client_id} in your terminal\'s configuration')
@@ -60,14 +68,25 @@ class PlaylistManager(object):
         """
         return (playlist_name in self.user_playlist_names())
 
-    def create(self, destination: str):
+    def create(self, destination: str, collab=False, description=""):
        """
        Create a playlist and return it's link if success or False if unsuccessful.
        """
 
        if not(self.is_playlist(destination)):
         return self.elevated_credentials.user_playlist_create(
-              self.user_id,
-              destination
+              user=self.user_id,
+              name=destination,
+              public=True,
+              description=description
         )['external_urls']['spotify']
        return False
+
+    def list_genre_seeds(self):
+        header = {
+         'Accept': 'application/json',
+         'Content-Type': 'application/json',
+         'Authorization': f'Bearer {self.token}'
+        }
+        response = requests.get('https://api.spotify.com/v1/recommendations/available-genre-seeds', headers=header)
+        return json.loads(response.text)['genres']

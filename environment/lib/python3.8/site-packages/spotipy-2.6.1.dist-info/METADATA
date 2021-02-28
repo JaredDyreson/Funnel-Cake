@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: spotipy
+Version: 2.6.1
+Summary: UNKNOWN
+Home-page: http://spotipy.readthedocs.org/
+Author: @plamere
+Author-email: paul@echonest.com
+License: LICENSE.md
+Platform: UNKNOWN
+Description-Content-Type: text/markdown
+Requires-Dist: requests (>=2.3.0)
+Requires-Dist: six (>=1.10.0)
+
+### A light weight Python library for the Spotify Web API
+
+

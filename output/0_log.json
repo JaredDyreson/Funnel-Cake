@@ -1,0 +1,76 @@
+{
+  "album": {
+    "album_type": "album",
+    "artists": [
+      {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/artist/6ASri4ePR7RlsvIQgWPJpS"
+        },
+        "href": "https://api.spotify.com/v1/artists/6ASri4ePR7RlsvIQgWPJpS",
+        "id": "6ASri4ePR7RlsvIQgWPJpS",
+        "name": "iann dior",
+        "type": "artist",
+        "uri": "spotify:artist:6ASri4ePR7RlsvIQgWPJpS"
+      }
+    ],
+    "external_urls": {
+      "spotify": "https://open.spotify.com/album/4Wb5bU9FkmZ84WkkL37rKA"
+    },
+    "href": "https://api.spotify.com/v1/albums/4Wb5bU9FkmZ84WkkL37rKA",
+    "id": "4Wb5bU9FkmZ84WkkL37rKA",
+    "images": [
+      {
+        "height": 640,
+        "url": "https://i.scdn.co/image/ab67616d0000b27316f00890f319eaccf4dd1570",
+        "width": 640
+      },
+      {
+        "height": 300,
+        "url": "https://i.scdn.co/image/ab67616d00001e0216f00890f319eaccf4dd1570",
+        "width": 300
+      },
+      {
+        "height": 64,
+        "url": "https://i.scdn.co/image/ab67616d0000485116f00890f319eaccf4dd1570",
+        "width": 64
+      }
+    ],
+    "name": "I'm Gone",
+    "release_date": "2020-06-12",
+    "release_date_precision": "day",
+    "total_tracks": 9,
+    "type": "album",
+    "uri": "spotify:album:4Wb5bU9FkmZ84WkkL37rKA"
+  },
+  "artists": [
+    {
+      "external_urls": {
+        "spotify": "https://open.spotify.com/artist/6ASri4ePR7RlsvIQgWPJpS"
+      },
+      "href": "https://api.spotify.com/v1/artists/6ASri4ePR7RlsvIQgWPJpS",
+      "id": "6ASri4ePR7RlsvIQgWPJpS",
+      "name": "iann dior",
+      "type": "artist",
+      "uri": "spotify:artist:6ASri4ePR7RlsvIQgWPJpS"
+    }
+  ],
+  "disc_number": 1,
+  "duration_ms": 133608,
+  "explicit": true,
+  "external_ids": {
+    "isrc": "QZJ842000282"
+  },
+  "external_urls": {
+    "spotify": "https://open.spotify.com/track/3fKdTr6Uv8HTb92Ih3QWxa"
+  },
+  "href": "https://api.spotify.com/v1/tracks/3fKdTr6Uv8HTb92Ih3QWxa",
+  "id": "3fKdTr6Uv8HTb92Ih3QWxa",
+  "is_local": false,
+  "is_playable": true,
+  "name": "Pretty Girls",
+  "popularity": 70,
+  "preview_url": "https://p.scdn.co/mp3-preview/afaab374c42fa1cf4ff548eafde986057795a205?cid=e1f239ec0ee443689d6786fd3f397af1",
+  "track_number": 2,
+  "type": "track",
+  "uri": "spotify:track:3fKdTr6Uv8HTb92Ih3QWxa"
+}

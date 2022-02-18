@@ -94,16 +94,24 @@ class Playlist:
     without having to spam the API
     """
 
-    def __init__(self, headers: typing.Dict, contents: typing.Dict, tracks: typing.List[Track], url=None):
+    def __init__(
+        self,
+        headers: typing.Dict,
+        contents: typing.Dict,
+        tracks: typing.List[Track],
+        url=None,
+    ):
         self.contents = contents
-        self.headers = headers # so we can make requests
+        self.headers = headers  # so we can make requests
         self.tracks = tracks
         self.url = url
 
         self.meta_data = PlaylistMetaData(self.contents, self.url)
 
     @classmethod
-    def from_file(cls, headers: typing.Dict, path: typing.Union[pathlib.Path, typing.Text]):
+    def from_file(
+        cls, headers: typing.Dict, path: typing.Union[pathlib.Path, typing.Text]
+    ):
         """
         Read in a json file for debugging so you
         do not have to constantly ping the API
@@ -146,9 +154,29 @@ class Playlist:
 
         __returnable = cls(headers, {}, [], url)
 
-        request_url = f"https://api.spotify.com/v1/playlists/{__returnable.meta_data.id_}"
+        request_url = (
+            f"https://api.spotify.com/v1/playlists/{__returnable.meta_data.id_}"
+        )
         request = requests.get(request_url, headers=headers)
         __returnable.contents = json.loads(request.content)
+
+        __returnable.tracks = [
+            Track(
+                [Artist(uri["name"], uri["uri"]) for uri in element["artists"]],
+                element["duration_ms"],
+                element["explicit"],
+                element["name"],
+                element["popularity"],
+                datetime.datetime.strptime(
+                    # element["album"]["release_date"], "%Y-%m-%d"
+                    "2021-01-01",
+                    "%Y-%m-%d",
+                ),
+                element["uri"],
+            )
+            for row in __returnable.contents
+            for element in row
+        ]
 
         match request.status_code:
             case 200:
@@ -158,7 +186,7 @@ class Playlist:
                     case "The access token expired":
                         raise Exception("Current token is expired, please renew")
                     case _:
-                        raise Exception(f'[ERROR]: {request.text}')
+                        raise Exception(f"[ERROR]: {request.text}")
 
         __returnable.meta_data = PlaylistMetaData(__returnable.contents, url)
         return __returnable
@@ -224,6 +252,7 @@ def urlify(string: str) -> str:
 
     return string.replace(" ", "%20")
 
+
 token = "BQDSQdxshIdD6RD60ep2qh4hXoR7PyFWsjSYxQBJ6lvv7VlZoWSXXOU8Qq3nF4W87E8ZDrH6ZLw0IgsHOebnEYCbTvJbClg_L-jfC_hpaZugWTq6A-VHBEDKr2F_3yry9e-UxkRF60-QsQnILgiGqHRGlndqBwqADthXm-iXO4Cg3zCk5aCCmG3zE6bU7-8P2yCHF0E3W5ctNM3Durcn5W27muu4SA"
 headers = {
     "Accept": "application/json",
@@ -233,7 +262,10 @@ headers = {
 
 # playlist = Playlist.from_file(headers, pathlib.Path("__girls___log.json"))
 
-from_url_playlist = Playlist.from_url(headers=headers, url="https://open.spotify.com/playlist/4IeI5PQYePhXaezV9HRDIr?si=48ca9e1d13434da2")
+from_url_playlist = Playlist.from_url(
+    headers=headers,
+    url="https://open.spotify.com/playlist/4IeI5PQYePhXaezV9HRDIr?si=48ca9e1d13434da2",
+)
 
 print(from_url_playlist.meta_data.name)
 

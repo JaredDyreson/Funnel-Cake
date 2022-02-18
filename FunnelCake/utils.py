@@ -3,6 +3,7 @@ Helper functions that do not belong to a specific
 class or series of classes
 """
 
+
 def clamp(value: int, minn: int, maxn: int) -> int:
     """
     Given a value and a range, give a value that lies in or at the end of the range

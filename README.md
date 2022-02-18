@@ -9,11 +9,6 @@ It has these major features:
     * Explicit
     * Non explicit
     * Live
-- Randomly generate playlists based on these criteria
-    * Artists
-    * Genre
-
-Input can be given in the form of a delimited list of strings such as `|` or `,`
 
 ## Getting Started
 

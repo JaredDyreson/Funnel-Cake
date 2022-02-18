@@ -13,10 +13,6 @@ class PlaylistMetaData:
     def __init__(self, content: typing.Dict, url=None):
         self.content = content
         self.url = url
-        # FIXME: remove this after done testing
-
-        with open("/tmp/url.json", "w", encoding="utf-8") as fil_ptr:
-            fil_ptr.write(json.dumps(self.content))
 
     @property
     def owner_id(self) -> str:
@@ -27,6 +23,16 @@ class PlaylistMetaData:
         """
 
         return self.content["owner"]["id"]
+
+    @property
+    def description(self) -> str:
+        """
+        Return the description of the playlist
+
+        @return str
+        """
+
+        return self.content["description"]
 
     @property
     def owner_display_name(self) -> str:

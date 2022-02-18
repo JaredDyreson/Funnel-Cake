@@ -16,6 +16,11 @@ TOKEN = Token(
 ME = SpotifyUser(TOKEN, "https://open.spotify.com/user/12164553253?si=5af2cdb1739744f6")
 
 ME.clone(
-    "https://open.spotify.com/playlist/4IeI5PQYePhXaezV9HRDIr?si=0ee5a49e39404fae",
-    "my playlist cloned",
+    "https://open.spotify.com/playlist/37i9dQZF1E8O1unMNglOfS?si=459ad8d37d744a5e",
+    "__messy__",
 )
+
+# ME.merge(
+    # ["https://open.spotify.com/playlist/4lbM8tXwkbbD5MrDOv1Tx0?si=0fc12b33394d4fea", "https://open.spotify.com/playlist/3UqSygUQ03NdFByKS58gQW?si=e003d2f299e543e6"],
+    # "My Merged Playlist"
+# )

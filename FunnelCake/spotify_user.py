@@ -9,6 +9,10 @@ import re
 import typing
 import pathlib
 import json
+import base64
+import requests
+import functools
+import operator
 
 
 class SpotifyUser:
@@ -52,13 +56,41 @@ class SpotifyUser:
 
         src_playlist = Playlist.from_url(url, self.token)
 
+        cover_image: typing.Dict = self.token.elevated_credentials.playlist_cover_image(
+            src_playlist.meta_data.id_
+        )[0]["url"]
+
+
+        match cover_image:
+            case None:
+                raise Exception("Could not find playlist cover image")
+            case _:
+                cover_image = base64.b64encode(requests.get(cover_image).content)
+
         self.create_playlist(
             name=f"{src_playlist.meta_data.name} | Cloned"
             if not destination
             else destination,
             public=True,
-            description=f"Cloned playlist from {src_playlist.url}",
+            description=f"Cloned playlist from {src_playlist.url}"
+            if not src_playlist.meta_data.description
+            else src_playlist.meta_data.description,
             tracks=[element.uri for element in src_playlist.tracks],
+            cover_image=cover_image
+        )
+
+    def merge(self, playlists: typing.List[str], destination: str = "") -> None:
+        src_playlists = [Playlist.from_url(url, self.token) for url in playlists]
+
+        collated = functools.reduce(operator.add, src_playlists)
+
+        self.create_playlist(
+            name=f"Example Merged Playlist"
+            if not destination
+            else destination,
+            public=True,
+            description=f"Merged playlist from {''.join([playlist.meta_data.name for playlist in src_playlists])}",
+            tracks=[element.uri for element in collated],
         )
 
     def add_tracks(self, playlist_id: str, tracks: typing.List[str]) -> None:

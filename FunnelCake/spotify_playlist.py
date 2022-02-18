@@ -22,7 +22,8 @@ def parse_response_contents(contents: typing.List[typing.Dict]) -> typing.List[T
             element["track"]["explicit"],
             element["track"]["name"],
             element["track"]["popularity"],
-            datetime.datetime.strptime(element["track"]["album"]["release_date"], "%Y-%m-%d"),
+            datetime.datetime.strptime("1970-01-01", "%Y-%m-%d"),
+            # datetime.datetime.strptime(element["track"]["album"]["release_date"], "%Y-%m-%d"),
             element["track"]["uri"],
         )
         for element in contents

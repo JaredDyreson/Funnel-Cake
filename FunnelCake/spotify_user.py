@@ -60,7 +60,6 @@ class SpotifyUser:
             src_playlist.meta_data.id_
         )[0]["url"]
 
-
         match cover_image:
             case None:
                 raise Exception("Could not find playlist cover image")
@@ -76,7 +75,7 @@ class SpotifyUser:
             if not src_playlist.meta_data.description
             else src_playlist.meta_data.description,
             tracks=[element.uri for element in src_playlist.tracks],
-            cover_image=cover_image
+            cover_image=cover_image,
         )
 
     def merge(self, playlists: typing.List[str], destination: str = "") -> None:
@@ -85,9 +84,7 @@ class SpotifyUser:
         collated = functools.reduce(operator.add, src_playlists)
 
         self.create_playlist(
-            name=f"Example Merged Playlist"
-            if not destination
-            else destination,
+            name=f"Example Merged Playlist" if not destination else destination,
             public=True,
             description=f"Merged playlist from {''.join([playlist.meta_data.name for playlist in src_playlists])}",
             tracks=[element.uri for element in collated],

@@ -62,7 +62,7 @@ class Playlist:
 
         with open(path, "r", encoding="utf-8") as fil_ptr:
             contents = json.loads(fil_ptr.read())
-            return cls(contents, parse_response_contents(contents), token,  "")
+            return cls(contents, parse_response_contents(contents), token, "")
 
     # return cls(headers, contents, tracks)
 

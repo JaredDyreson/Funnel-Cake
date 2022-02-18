@@ -7,7 +7,7 @@ Funnel Cake project
 class MessageException(Exception):
     """Base types for exceptions that include a string message"""
 
-    def __init__(self, message):
+    def __init__(self, message: str):
         if not isinstance(message, str):
             raise ValueError(f"Expecting a str, obtained a {type(message)}")
 

@@ -91,12 +91,29 @@ class SpotifyUser:
         )
 
     def add_tracks(self, playlist_id: str, tracks: typing.List[str]) -> None:
-        """Add all the tracks in a list to a given playlust"""
+        """
+        Add all the tracks in a list to a given playlist
+
+        @param playlist_id : the destination playlist
+        @param tracks: list of uris to be added
+
+        @return None
+        """
 
         for x in range(0, len(tracks), 100):
             self.token.elevated_credentials.playlist_add_items(
                 playlist_id, tracks[x : x + 100]
             )
+    def append(self, url: str, tracks: typing.List[str]) -> None:
+        """Add new tracks to a playlist"""
+
+        src_playlist = Playlist.from_url(url, self.token)
+        current_tracks = [_.uri for _ in src_playlist.tracks]
+        new_tracks = list(dict.fromkeys(current_tracks + tracks).keys())
+
+        self.add_tracks(src_playlist.meta_data.id_, new_tracks)
+
+
 
     def create_playlist(
         self,
@@ -144,7 +161,7 @@ class SpotifyUser:
             for element in self.splay(api_response)
         }
 
-    def obtain_saved_tracks(self) -> typing.Dict[str, typing.Any]:
+    def obtain_saved_tracks(self) -> typing.Dict[str, typing.Dict]:
         """Get all user tracks with the date added"""
 
         api_response = self.token.elevated_credentials.current_user_saved_tracks()

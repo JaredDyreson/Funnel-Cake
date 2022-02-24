@@ -113,7 +113,32 @@ class SpotifyUser:
 
         self.add_tracks(src_playlist.meta_data.id_, new_tracks)
 
+    def dupes(self, url: str) -> typing.List[typing.Dict[str, typing.List[int]]]:
+        """
+        Find instances of duplicate tracks and their positions in the playlist
 
+        @param url: link to the playlist
+
+        @return typing.List[typing.Dict[str, typing.List[int]]]: list of all occurences
+        """
+
+        seen = set()
+        __dict = {}
+
+        src_playlist = Playlist.from_url(url, self.token)
+
+        for x, value in enumerate(src_playlist.tracks):
+            if value not in seen:
+                seen.add(value)
+                __dict[value.uri] = [x]
+            else:
+                __dict[value.uri].append(x)
+
+        return [
+            {"uri": key, "positions": value[1:]}
+            for key, value in __dict.items()
+            if len(value) >= 2
+        ]
 
     def create_playlist(
         self,

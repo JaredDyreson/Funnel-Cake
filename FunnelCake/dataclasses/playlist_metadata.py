@@ -1,6 +1,6 @@
 """Module that contains the implmenation for PlaylistMetaData"""
 
-from FunnelCake.funnel_cake_exceptions import URLParsingException
+from FunnelCake.utils import parse_url
 
 import typing
 import re
@@ -31,8 +31,8 @@ class PlaylistMetaData:
 
         @return str
         """
-
-        return self.content["description"]
+        return "I am a test description because this feature is broken"
+        # return self.content["description"]
 
     @property
     def owner_display_name(self) -> str:
@@ -68,10 +68,4 @@ class PlaylistMetaData:
         Raise a URLParsingException if the url is malformed
         """
 
-        playlist_re = re.compile(
-            r"https://open.spotify.com/playlist/(?P<playlist_id>.*)\?si\=.*"
-        )
-
-        if not (match := playlist_re.match(self.url)):
-            raise URLParsingException(f"[ERROR] Url {self.url} is not a valid playlist")
-        return match.group("playlist_id")
+        return parse_url(self.url)

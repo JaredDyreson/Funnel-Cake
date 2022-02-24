@@ -80,14 +80,24 @@ class Playlist:
 
         __returnable = cls({}, [], token, url)
 
-        results = __returnable.token.non_elevated_credentials.playlist(
-            __returnable.meta_data.id_
+        results = __returnable.token.non_elevated_credentials.playlist_items(
+            playlist_id=__returnable.meta_data.id_, 
+            fields="total,name,items"
         )
-        container = results["tracks"]["items"]
 
-        while results["tracks"]["next"]:
-            results = __returnable.token.elevated_credentials.next(results)
-            container.extend(results["tracks"]["items"])
+        # results = __returnable.token.non_elevated_credentials.user_playlist_tracks(
+        # __returnable.meta_data.id_,
+        # fields="total,limit"
+        # )
+
+        container = results["items"]
+
+
+        while len(container) < results["total"]:
+            results = __returnable.token.non_elevated_credentials.playlist_items(
+                playlist_id=__returnable.meta_data.id_, fields="total,name,items", offset=len(container)
+            )
+            container.extend(results["items"])
 
         __returnable.tracks = parse_response_contents(container)
 

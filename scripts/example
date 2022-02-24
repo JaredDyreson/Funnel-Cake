@@ -1,0 +1,12 @@
+# assign which playlist is being manipulated
+
+specify https://open.spotify.com/playlist/2Wy8AeHnfsE31RQB0cx2Bp?si=cd8a7c4bd0d44196
+
+# append the contents of this playlist to another
+
+append
+https://open.spotify.com/playlist/5ArIGmR0ZU9nLGysTEnjtK?si=bbe0e97f872b4077
+
+# all changes are in memory before application
+
+apply
